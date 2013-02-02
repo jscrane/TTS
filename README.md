@@ -1,7 +1,10 @@
 TTS
 ===
 
-Text-to-Speech for Arduino
+Text-to-Speech for Arduino.
+
+This requires an amplifier on the PWM output pin, e.g., this one:
+http://www.tinyurl.com/magicmouth/
 
 The original implementation was by Clive Webster in Webbotlib 
 (http://webbot.org.uk/iPoint/30.page ).
