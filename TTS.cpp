@@ -346,15 +346,16 @@ static int pin;
 
 static void soundOff(void)
 {
-    if (pin == 10) {
+    if (pin == 10)
 	TCCR1A &= ~(_BV(COM1B1));	// Disable PWM
-	pinMode(10, INPUT);
-    } else if (pin == 3) {
-	TCCR2A &= ~(_BV(COM2B1));	// Disable PWM
-	pinMode(3, INPUT);
-    } else {
+    else if (pin == 9)
+	TCCR1A &= ~(_BV(COM1A1));
+    else if (pin == 3)
+	TCCR2A &= ~(_BV(COM2B1));
+    else {
 	// TODO
     }
+    pinMode(pin, INPUT);
 }
 
 #define PWM_TOP (1200/2)
@@ -362,16 +363,21 @@ static void soundOff(void)
 //https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
 static void soundOn(void)
 {
+    pinMode(pin, OUTPUT);
     if (pin == 10) {
-	pinMode(10, OUTPUT);
 	TCCR1A = 0;		// disable PWM
 	ICR1 = PWM_TOP;
 	// Set the Timer1 to use for PWM sound control
 	TCCR1B = ((1 << WGM13) | (1 << CS10));
 	TCNT1 = 0;
 	TCCR1A |= _BV(COM1B1);	// ENABLE PWM ON B2 USING OC1B, OCR1B
+    } else if (pin == 9) {
+	TCCR1A = 0;		// disable PWM
+	ICR1 = PWM_TOP;
+	TCCR1B = ((1 << WGM13) | (1 << CS10));
+	TCNT1 = 0;
+	TCCR1A |= _BV(COM1A1);
     } else if (pin == 3) {
-	pinMode(3, OUTPUT);
 	TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
 	TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
 	OCR2B = PWM_TOP;
@@ -406,6 +412,11 @@ static void sound(byte b)
 	if (duty != OCR1B) {
 	    TCNT1 = 0;
 	    OCR1B = duty;
+	}
+    } else if (pin == 9) {
+	if (duty != OCR1A) {
+	    TCNT1 = 0;
+	    OCR1A = duty;
 	}
     } else if (pin == 3) {
 	int8_t d = duty / 256;
@@ -453,10 +464,15 @@ void TTS::setPitch(byte pitch)
     defaultPitch = pitch;
 }
 
+byte TTS::getPitch(void)
+{
+    return defaultPitch;
+}
+
 /*
  * Speak a string of phonemes
  */
-void TTS::speak(const char *textp)
+void TTS::sayPhonemes(const char *textp)
 {
     byte phonemeIn,		// offset into text
     byte2, modifierIn,		// offset into stuff in modifier
@@ -657,7 +673,7 @@ void TTS::speak(const char *textp)
 /*
  * Speak an English command line of text
  */
-void TTS::say(const char *original)
+void TTS::sayText(const char *original)
 {
     int i;
     if (textToPhonemes(original, s_vocab, phonemes)) {
@@ -668,6 +684,6 @@ void TTS::say(const char *original)
 	while (i < sizeof(g_text))
 	    g_text[i++] = 0;
 
-	speak(g_text);
+	sayPhonemes(g_text);
     }
 }

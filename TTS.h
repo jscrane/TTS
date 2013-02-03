@@ -19,13 +19,33 @@
 #include "english.h"
 
 class TTS {
-  private:
-
   public:
+    /**
+     * constructs a new text-to-speech
+     * pin is the PWM pin on which audio is output
+     * (valid values: 9, 10, 3)
+     */
     TTS(int pin = 10);
-    void say(const char *);
-    void speak(const char *);
+
+    /**
+     * speaks a string of (english) text
+     */
+    void sayText(const char *text);
+
+    /**
+     * speaks a string of phonemes
+     */
+    void sayPhonemes(const char *phonemes);
+
+    /**
+     * sets the pitch; higher values: lower pitch
+     */
     void setPitch(byte pitch);
+
+    /**
+     * gets the pitch
+     */
+    byte getPitch(void);
 };
 
 #endif

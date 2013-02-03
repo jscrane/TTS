@@ -25,11 +25,11 @@ void setup() {
 void loop() {
   digitalWrite(LED, !digitalRead(LED));
 
-  text2speech.setPitch(6); //higher values = lower voice pitch
+  text2speech.setPitch(6);
   text2speech.say("Hello  master! How are you doin?");
   delay(500); 
 
-  text2speech.setPitch(1); //lower values = higher voice pitch
+  text2speech.setPitch(1);
   text2speech.say("I am fine, thankyou."); 
 
   delay(1000);
