@@ -22,7 +22,7 @@ void loop(void) {
         tts.setPitch(p);
       } else {
         Serial.println(line);
-        tts.say(line);
+        tts.sayText(line);
       }
       pos = 0;
       digitalWrite(13, LOW);

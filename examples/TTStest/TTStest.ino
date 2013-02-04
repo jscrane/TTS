@@ -26,11 +26,11 @@ void loop() {
   digitalWrite(LED, !digitalRead(LED));
 
   text2speech.setPitch(6);
-  text2speech.say("Hello  master! How are you doin?");
+  text2speech.sayText("Hello  master! How are you doin?");
   delay(500); 
 
   text2speech.setPitch(1);
-  text2speech.say("I am fine, thankyou."); 
+  text2speech.sayText("I am fine, thankyou."); 
 
   delay(1000);
 }  
