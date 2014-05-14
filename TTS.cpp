@@ -33,7 +33,7 @@ static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
  */
 static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
 {
-    for (int ph = 0; ph < numVocab; ph++) {
+    for (unsigned int ph = 0; ph < numVocab; ph++) {
 	const char *txt = (const char *) pgm_read_word(&vocab[ph].txt);
 	if (pgm_read_byte(&txt[0]) == token && pgm_read_byte(&txt[1]) == 0) {
 	    const char *src =
@@ -73,7 +73,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	int maxWildcardPos = 0;
 
 	// Get next phoneme, P2
-	for (int ph = 0; ph < numVocab; ph++) {
+	for (unsigned int ph = 0; ph < numVocab; ph++) {
 	    int y, x;
 	    char wildcard = 0;	// modifier
 	    int wildcardInPos = 0;
@@ -177,8 +177,8 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
  */
 static int phonemesToData(const char *textp, const PHONEME * phoneme)
 {
-    int phonemeOut = 0;		// offset into the phonemes array
-    int modifierOut = 0;	// offset into the modifiers array
+    unsigned int phonemeOut = 0;	// offset into the phonemes array
+    unsigned int modifierOut = 0;	// offset into the modifiers array
     unsigned int L81 = 0;	// attenuate
     unsigned int L80 = 16;
 
@@ -189,7 +189,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 	int numOut = 0;		// The number of bytes copied to the output for the longest match
 
 	// Get next phoneme, P2
-	for (int ph = 0; ph < numPhoneme; ph++) {
+	for (unsigned int ph = 0; ph < numPhoneme; ph++) {
 	    int numChars;
 
 	    // Locate start of next phoneme 
@@ -407,7 +407,7 @@ static void sound(byte b)
 {
     b = (b & 15);
     // Update PWM volume 
-    int16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
+    uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
     if (pin == 10) {
 	if (duty != OCR1B) {
 	    TCNT1 = 0;
@@ -675,7 +675,7 @@ void TTS::sayPhonemes(const char *textp)
  */
 void TTS::sayText(const char *original)
 {
-    int i;
+    unsigned int i;
     if (textToPhonemes(original, s_vocab, phonemes)) {
 	// copy string from phonemes to text 
 	for (i = 0; phonemes[i]; i++)
