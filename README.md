@@ -16,3 +16,5 @@ Stephen Crane modified it to use pins other than pin 10 with the help
 of this tutorial:
 
 https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
+
+See blog articles: http://programmablehardware.blogspot.ie/search/label/tts
