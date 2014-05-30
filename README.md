@@ -18,3 +18,5 @@ of this tutorial:
 https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
 
 See blog articles: http://programmablehardware.blogspot.ie/search/label/tts
+
+![alt tag](images/Arduino-LM386.png)
