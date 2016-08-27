@@ -350,8 +350,11 @@ static void soundOff(void)
 	TCCR1A &= ~(_BV(COM1B1));	// Disable PWM
     else if (pin == 9)
 	TCCR1A &= ~(_BV(COM1A1));
+// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+#if !defined(__AVR_ATmega32U4__)
     else if (pin == 3)
 	TCCR2A &= ~(_BV(COM2B1));
+#endif
     else {
 	// TODO
     }
@@ -377,12 +380,17 @@ static void soundOn(void)
 	TCCR1B = ((1 << WGM13) | (1 << CS10));
 	TCNT1 = 0;
 	TCCR1A |= _BV(COM1A1);
-    } else if (pin == 3) {
+    }
+// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+#if !defined(__AVR_ATmega32U4__)
+    else if (pin == 3) {
 	TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
 	TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
 	OCR2B = PWM_TOP;
 	TCNT2 = 0;
-    } else {
+    }
+#endif
+    else {
 	// TODO
     }
 
@@ -418,13 +426,18 @@ static void sound(byte b)
 	    TCNT1 = 0;
 	    OCR1A = duty;
 	}
-    } else if (pin == 3) {
+    }
+// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+#if !defined(__AVR_ATmega32U4__)
+    else if (pin == 3) {
 	int8_t d = duty / 256;
 	if (d != OCR2B) {
 	    TCNT2 = 0;
 	    OCR2B = d;
 	}
-    } else {
+    }
+#endif
+    else {
 	// TODO
     }
 }
