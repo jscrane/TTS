@@ -20,7 +20,7 @@ static byte seed2;
 
 static char phonemes[128];
 static char modifier[128];	// must be same size as 'phonemes'
-static char g_text[64];
+static char g_text[128];
 
 static byte defaultPitch = 7;
 
@@ -159,7 +159,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	}
 	// 20
 	outIndex += numOut;
-	if (outIndex > 256 - 16) {
+	if (outIndex > 128 - 16) {
 	    //loggerP(PSTR("Mistake in SAY, text too long\n"));
 	    return 0;
 	}
@@ -689,14 +689,7 @@ void TTS::sayPhonemes(const char *textp)
 void TTS::sayText(const char *original)
 {
     unsigned int i;
-    if (textToPhonemes(original, s_vocab, phonemes)) {
-	// copy string from phonemes to text 
-	for (i = 0; phonemes[i]; i++)
-	    g_text[i] = phonemes[i];
-
-	while (i < sizeof(g_text))
-	    g_text[i++] = 0;
-
+    if (textToPhonemes(original, s_vocab, g_text)) {  
 	sayPhonemes(g_text);
     }
 }
