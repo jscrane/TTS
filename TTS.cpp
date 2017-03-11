@@ -449,13 +449,26 @@ static void sound(byte b)
 	    OCR1A = duty;
 	}
     }
-// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+// Arduino Leonardo doesn't have Timer2.
 #if !defined(__AVR_ATmega32U4__)
     else if (pin == 3) {
 	int8_t d = duty / 256;
 	if (d != OCR2B) {
 	    TCNT2 = 0;
 	    OCR2B = d;
+	}
+    }
+#endif
+#if defined(__AVR_ATmega2560__)
+    else if (pin == 46) {
+	if (duty != OCR5B) {
+	    TCNT5 = 0;
+	    OCR5B = duty;
+	}
+    } else if (pin == 44) {
+	if (duty != OCR5B) {
+	    TCNT5 = 0;
+	    OCR5B = duty;
 	}
     }
 #endif
