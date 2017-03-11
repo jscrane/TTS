@@ -9,6 +9,7 @@
  * http://www.tehnorama.ro/minieric-modulul-de-control-si-sinteza-vocala/
  * 
  * Modified to allow use of different PWM pins by Stephen Crane.
+ * Modified for Timer5 on Arduino Mega2560 by Peter Dambrowsky.
  */
 
 #include "TTS.h"
@@ -350,10 +351,16 @@ static void soundOff(void)
 	TCCR1A &= ~(_BV(COM1B1));	// Disable PWM
     else if (pin == 9)
 	TCCR1A &= ~(_BV(COM1A1));
-// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+// Arduino Leonardo doesn't have Timer2.
 #if !defined(__AVR_ATmega32U4__)
     else if (pin == 3)
 	TCCR2A &= ~(_BV(COM2B1));
+#endif
+#if defined(__AVR_ATmega2560__)
+    else if (pin == 46)
+	TCCR5A &= ~(_BV(COM5A1));
+    else if (pin == 44)
+	TCCR5A &= ~(_BV(COM5C1));
 #endif
     else {
 	// TODO
@@ -381,13 +388,28 @@ static void soundOn(void)
 	TCNT1 = 0;
 	TCCR1A |= _BV(COM1A1);
     }
-// Arduino Leonardo doesn't have Timer2, so this code won't compile.  Skip on Leonardo.
+// Arduino Leonardo doesn't have Timer2.
 #if !defined(__AVR_ATmega32U4__)
     else if (pin == 3) {
 	TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
 	TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
 	OCR2B = PWM_TOP;
 	TCNT2 = 0;
+    }
+#endif
+#if defined(__AVR_ATmega2560__)
+    else if (pin == 46) {
+	TCCR5A = 0;        // disable PWM
+	ICR5 = PWM_TOP;
+	TCCR5B = ((1 << WGM13) | (1 << CS10));
+	TCNT5 = 0;
+	TCCR5A |= _BV(COM5A1);
+    } else if (pin == 44) {
+	TCCR5A = 0;        // disable PWM
+	ICR5 = PWM_TOP;
+	TCCR5B = ((1 << WGM13) | (1 << CS10));
+	TCNT5 = 0;
+	TCCR5A |= _BV(COM5C1);
     }
 #endif
     else {
