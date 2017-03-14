@@ -359,6 +359,8 @@ static void soundOff(void)
 #if defined(__AVR_ATmega2560__)
     else if (pin == 46)
 	TCCR5A &= ~(_BV(COM5A1));
+    else if (pin == 45)
+	TCCR5A &= ~(_BV(COM5B1));
     else if (pin == 44)
 	TCCR5A &= ~(_BV(COM5C1));
 #endif
@@ -404,6 +406,12 @@ static void soundOn(void)
 	TCCR5B = ((1 << WGM13) | (1 << CS10));
 	TCNT5 = 0;
 	TCCR5A |= _BV(COM5A1);
+    } else if (pin == 45) {
+	TCCR5A = 0;        // disable PWM
+	ICR5 = PWM_TOP;
+	TCCR5B = ((1 << WGM13) | (1 << CS10));
+	TCNT5 = 0;
+	TCCR5A |= _BV(COM5B1);
     } else if (pin == 44) {
 	TCCR5A = 0;        // disable PWM
 	ICR5 = PWM_TOP;
@@ -461,6 +469,11 @@ static void sound(byte b)
 #endif
 #if defined(__AVR_ATmega2560__)
     else if (pin == 46) {
+	if (duty != OCR5B) {
+	    TCNT5 = 0;
+	    OCR5B = duty;
+	}
+    } else if (pin == 45) {
 	if (duty != OCR5B) {
 	    TCNT5 = 0;
 	    OCR5B = duty;
