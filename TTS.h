@@ -18,6 +18,9 @@
 #include <inttypes.h>
 #include "english.h"
 
+// teensy DAC, set pin to enable teensy stuff, assume 8-bit DAC
+#define DACPIN A14
+
 class TTS {
   public:
     /**
