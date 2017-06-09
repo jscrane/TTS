@@ -472,10 +472,10 @@ static const int16_t PROGMEM Volume[8] =
 static void sound(byte b)
 {
     // Update PWM volume 
+    b = (b & 15);
 #ifdef DACPIN
 	analogWrite(DACPIN,b*8);
 #else
-    b = (b & 15);
     uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
     if (pin == 10) {
 	if (duty != OCR1B) {
