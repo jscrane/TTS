@@ -305,13 +305,13 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 /*
  * A delay loop that doesn't change with different optimisation settings
  */
+#ifndef DACPIN
 static void loops(byte delays)
 {
-#ifndef DACPIN
     __asm__ volatile ("1: dec %0" "\n\t" "brne 1b":"=r" (delays)
 		      :"0"(delays));
-#endif
 }
+#endif
 
 static void pause(byte delays)
 {
@@ -387,11 +387,7 @@ static void soundOff(void)
 #endif
 }
 
-#ifdef DACPIN
-#define PWM_TOP 256
-#else
 #define PWM_TOP (1200/2)
-#endif
 
 //https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
 static void soundOn(void)
@@ -475,12 +471,12 @@ static const int16_t PROGMEM Volume[8] =
 
 static void sound(byte b)
 {
-    b = (b & 15);
     // Update PWM volume 
-    uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
 #ifdef DACPIN
-	analogWrite(DACPIN,duty);
+	analogWrite(DACPIN,b*8);
 #else
+    b = (b & 15);
+    uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
     if (pin == 10) {
 	if (duty != OCR1B) {
 	    TCNT1 = 0;
