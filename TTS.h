@@ -22,9 +22,11 @@
 #if defined(__MK20DX256__)
 #define DACPIN A14   // T3.2
 #elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
-#define DACPIN A21  // or A22 T3.5 T3.6
+#define DACPIN A21  // A21 or A22 T3.5 T3.6
 #elif defined(__MKL26Z64__)
 #define DACPIN A12  // LC
+#elif defined(__SAM3X8E__)
+#define DACPIN DAC0   // DUE DAC0 or DAC1
 #endif
 
 class TTS {
