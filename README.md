@@ -17,4 +17,4 @@
 - tested on Teensy 3.1, 3.5, 3.6, LC, and DUE
 - Teensy [forum](https://forum.pjrc.com/threads/44587-TTS-(Text-to-Speech)-Library-Port)
 - separate port/hack for MBED ARM with DAC [repository](https://developer.mbed.org/users/manitou/code/tts/)
-- also added AVR support for Leonardo pin 9 (timer 3)
+- also added AVR support for Leonardo pin 5 (timer 3)
