@@ -305,24 +305,34 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 /*
  * A delay loop that doesn't change with different optimisation settings
  */
+#ifndef DACPIN
 static void loops(byte delays)
 {
     __asm__ volatile ("1: dec %0" "\n\t" "brne 1b":"=r" (delays)
 		      :"0"(delays));
 }
+#endif
 
 static void pause(byte delays)
 {
+#ifdef DACPIN
+	delayMicroseconds(delays*6);
+#else
     for (byte r = TIME_FACTOR; r > 0; r--)
 	loops(delays);
+#endif
 }
 
 static void delay2(byte d)
 {
+#ifdef DACPIN
+	delayMicroseconds(d*3127);
+#else
     while (d--) {
 	pause(0);		// 256
 	pause(0);		// 256
     }
+#endif
 }
 
 /*
@@ -347,12 +357,18 @@ static int pin;
 
 static void soundOff(void)
 {
+#ifdef DACPIN
+	analogWrite(DACPIN,0);
+#else
     if (pin == 10)
 	TCCR1A &= ~(_BV(COM1B1));	// Disable PWM
     else if (pin == 9)
 	TCCR1A &= ~(_BV(COM1A1));
+#if defined(__AVR_ATmega32U4__)
+    else if (pin == 5)
+	TCCR3A=0;// &= ~(_BV(COM3A1));
+#else
 // Arduino Leonardo doesn't have Timer2.
-#if !defined(__AVR_ATmega32U4__)
     else if (pin == 3)
 	TCCR2A &= ~(_BV(COM2B1));
 #endif
@@ -368,6 +384,7 @@ static void soundOff(void)
 	// TODO
     }
     pinMode(pin, INPUT);
+#endif
 }
 
 #define PWM_TOP (1200/2)
@@ -375,6 +392,9 @@ static void soundOff(void)
 //https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
 static void soundOn(void)
 {
+#ifdef DACPIN
+	analogWrite(DACPIN,0);
+#else
     pinMode(pin, OUTPUT);
     if (pin == 10) {
 	TCCR1A = 0;		// disable PWM
@@ -390,8 +410,16 @@ static void soundOn(void)
 	TCNT1 = 0;
 	TCCR1A |= _BV(COM1A1);
     }
+#if defined(__AVR_ATmega32U4__)
+     else if (pin == 5) {
+	TCCR3A = 0;		// disable PWM
+	ICR3 = PWM_TOP;
+	TCCR3B = ((1 << WGM33) | (1 << CS30));
+	TCNT3 = 0;
+	TCCR3A |= _BV(COM3A1);
+    }
+#else
 // Arduino Leonardo doesn't have Timer2.
-#if !defined(__AVR_ATmega32U4__)
     else if (pin == 3) {
 	TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
 	TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
@@ -423,7 +451,7 @@ static void soundOn(void)
     else {
 	// TODO
     }
-
+#endif
     // initialise random number seed
     seed0 = 0xecu;
     seed1 = 7;
@@ -437,14 +465,17 @@ static void soundOn(void)
 
 // Linear scale
 static const int16_t PROGMEM Volume[8] =
-    { 0, PWM_TOP * 0.07, PWM_TOP * 0.14, PWM_TOP * 0.21, PWM_TOP * 0.29,
-    PWM_TOP * 0.36, PWM_TOP * 0.43, PWM_TOP * 0.5
+    { 0, (uint16_t)(PWM_TOP * 0.07), (uint16_t)(PWM_TOP * 0.14), (uint16_t)(PWM_TOP * 0.21), (uint16_t)(PWM_TOP * 0.29),
+    (uint16_t)(PWM_TOP * 0.36), (uint16_t)(PWM_TOP * 0.43), (uint16_t)(PWM_TOP * 0.5)
 };
 
 static void sound(byte b)
 {
-    b = (b & 15);
     // Update PWM volume 
+    b = (b & 15);
+#ifdef DACPIN
+	analogWrite(DACPIN,b*8);
+#else
     uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
     if (pin == 10) {
 	if (duty != OCR1B) {
@@ -457,8 +488,15 @@ static void sound(byte b)
 	    OCR1A = duty;
 	}
     }
+#if defined(__AVR_ATmega32U4__)
+	else if (pin == 5) {
+    if (duty != OCR3A) {
+        TCNT3 = 0;
+        OCR3A = duty;
+    }
+    }
+#else
 // Arduino Leonardo doesn't have Timer2.
-#if !defined(__AVR_ATmega32U4__)
     else if (pin == 3) {
 	int8_t d = duty / 256;
 	if (d != OCR2B) {
@@ -488,6 +526,7 @@ static void sound(byte b)
     else {
 	// TODO
     }
+#endif
 }
 
 static byte playTone(byte soundNum, byte soundPos, char pitch1,

@@ -9,3 +9,12 @@
 - see [blog articles](http://programmablehardware.blogspot.ie/search/label/tts)
 
 ![alt tag](images/Arduino-LM386.png)
+
+## Text-to-Speech for ARM with DAC
+
+- add support for ARM processors with DAC
+- PWM filter not required with DAC, but still need audio amp and speaker. DACs can source only about 1 ma
+- tested on Teensy 3.1, 3.5, 3.6, LC, and DUE
+- Teensy [forum](https://forum.pjrc.com/threads/44587-TTS-(Text-to-Speech)-Library-Port)
+- separate port/hack for MBED ARM with DAC [repository](https://developer.mbed.org/users/manitou/code/tts/)
+- also added AVR support for Leonardo pin 5 (timer 3)
