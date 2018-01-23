@@ -70,7 +70,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
     while (inIndex == -1 || src[inIndex]) {	// until end of text
 	int maxMatch = 0;	// Max chars matched on input text
 	int numOut = 0;		// Number of characters copied to output stream for the best match
-	boolean endsInWhiteSpace = FALSE;
+	boolean endsInWhiteSpace = false;
 	int maxWildcardPos = 0;
 
 	// Get next phoneme, P2
@@ -78,7 +78,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	    int y, x;
 	    char wildcard = 0;	// modifier
 	    int wildcardInPos = 0;
-	    boolean hasWhiteSpace = FALSE;
+	    boolean hasWhiteSpace = false;
 	    const char *text =
 		(const char *) pgm_read_word(&vocab[ph].txt);
 	    const char *phon =
@@ -100,7 +100,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 
 		if (nextVocabChar == '_') {
 		    // try to match against a white space
-		    hasWhiteSpace = TRUE;
+		    hasWhiteSpace = true;
 		    if (whitespace(nextCharIn))
 			continue;
 		    y--;
@@ -185,7 +185,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 
     while (*textp) {
 	// P20: Get next phoneme
-	boolean anyMatch = FALSE;
+	boolean anyMatch = false;
 	int longestMatch = 0;
 	int numOut = 0;		// The number of bytes copied to the output for the longest match
 
@@ -229,7 +229,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 		    pgm_read_byte(&ph_ph[numOut]);
 
 	    L81 = pgm_read_byte(&phoneme[ph].attenuate) + '0';
-	    anyMatch = TRUE;	// phoneme match found
+	    anyMatch = true;	// phoneme match found
 
 	    modifier[modifierOut] = -1;
 	    modifier[modifierOut + 1] = 0;
