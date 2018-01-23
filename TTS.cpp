@@ -303,35 +303,37 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 /*
  * A delay loop that doesn't change with different optimisation settings
  */
-#ifndef DACPIN
+#ifdef __AVR__
 static void loops(byte delays)
 {
     __asm__ volatile ("1: dec %0" "\n\t" "brne 1b":"=r" (delays)
 		      :"0"(delays));
 }
-#endif
 
 static void pause(byte delays)
 {
-#ifdef DACPIN
-	delayMicroseconds(delays*6);
-#else
     for (byte r = TIME_FACTOR; r > 0; r--)
 	loops(delays);
-#endif
 }
 
 static void delay2(byte d)
 {
-#ifdef DACPIN
-	delayMicroseconds(d*3127);
-#else
     while (d--) {
-	pause(0);		// 256
-	pause(0);		// 256
+        pause(0);               // 256
+        pause(0);               // 256
     }
-#endif
 }
+#else
+static void pause(byte delays)
+{
+    delayMicroseconds(delays*6);
+}
+
+static void delay2(byte d)
+{
+    delayMicroseconds(d*3127);
+}
+#endif
 
 /*
  * Generate a random number
@@ -355,34 +357,40 @@ static int pin;
 
 static void soundOff(void)
 {
-#ifdef DACPIN
-	analogWrite(DACPIN,0);
-#else
-    if (pin == 10)
-	TCCR1A &= ~(_BV(COM1B1));	// Disable PWM
-    else if (pin == 9)
-	TCCR1A &= ~(_BV(COM1A1));
-#if defined(__AVR_ATmega32U4__)
-    else if (pin == 5)
-	TCCR3A=0;// &= ~(_BV(COM3A1));
-#else
-// Arduino Leonardo doesn't have Timer2.
-    else if (pin == 3)
-	TCCR2A &= ~(_BV(COM2B1));
+    switch (pin) {
+#ifdef TCCR1A
+    case 10:
+        TCCR1A &= ~(_BV(COM1B1));       // Disable PWM
+        break;
+    case 9:
+        TCCR1A &= ~(_BV(COM1A1));
+        break;
 #endif
-#if defined(__AVR_ATmega2560__)
-    else if (pin == 46)
-	TCCR5A &= ~(_BV(COM5A1));
-    else if (pin == 45)
-	TCCR5A &= ~(_BV(COM5B1));
-    else if (pin == 44)
-	TCCR5A &= ~(_BV(COM5C1));
+#ifdef TCCR2A
+    case 3:
+        TCCR2A &= ~(_BV(COM2B1));
+        break;
 #endif
-    else {
-	// TODO
+#ifdef TCCR3A
+    case 5:
+        TCCR3A = 0;// &= ~(_BV(COM3A1));
+        break;
+#endif
+#ifdef TCCR5A
+    case 46:
+        TCCR5A &= ~(_BV(COM5A1));
+        break;
+    case 45:
+        TCCR5A &= ~(_BV(COM5B1));
+        break;
+    case 44:
+        TCCR5A &= ~(_BV(COM5C1));
+        break;
+#endif
+    default:
+        analogWrite(pin, 0);
+        return;
     }
-    pinMode(pin, INPUT);
-#endif
 }
 
 #define PWM_TOP (1200/2)
@@ -390,66 +398,69 @@ static void soundOff(void)
 //https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
 static void soundOn(void)
 {
-#ifdef DACPIN
-	analogWrite(DACPIN,0);
-#else
-    pinMode(pin, OUTPUT);
-    if (pin == 10) {
-	TCCR1A = 0;		// disable PWM
-	ICR1 = PWM_TOP;
-	// Set the Timer1 to use for PWM sound control
-	TCCR1B = ((1 << WGM13) | (1 << CS10));
-	TCNT1 = 0;
-	TCCR1A |= _BV(COM1B1);	// ENABLE PWM ON B2 USING OC1B, OCR1B
-    } else if (pin == 9) {
-	TCCR1A = 0;		// disable PWM
-	ICR1 = PWM_TOP;
-	TCCR1B = ((1 << WGM13) | (1 << CS10));
-	TCNT1 = 0;
-	TCCR1A |= _BV(COM1A1);
-    }
-#if defined(__AVR_ATmega32U4__)
-     else if (pin == 5) {
-	TCCR3A = 0;		// disable PWM
-	ICR3 = PWM_TOP;
-	TCCR3B = ((1 << WGM33) | (1 << CS30));
-	TCNT3 = 0;
-	TCCR3A |= _BV(COM3A1);
-    }
-#else
-// Arduino Leonardo doesn't have Timer2.
-    else if (pin == 3) {
-	TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
-	TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
-	OCR2B = PWM_TOP;
-	TCNT2 = 0;
-    }
+    switch (pin) {
+#ifdef TCCR1A
+    case 10:
+        TCCR1A = 0;         // disable PWM
+        ICR1 = PWM_TOP;
+        // Set the Timer1 to use for PWM sound control
+        TCCR1B = ((1 << WGM13) | (1 << CS10));
+        TCNT1 = 0;
+        TCCR1A |= _BV(COM1B1);  // ENABLE PWM ON B2 USING OC1B, OCR1B
+        break;
+    case 9:
+        TCCR1A = 0;         // disable PWM
+        ICR1 = PWM_TOP;
+        TCCR1B = ((1 << WGM13) | (1 << CS10));
+        TCNT1 = 0;
+        TCCR1A |= _BV(COM1A1);
+        break;
 #endif
-#if defined(__AVR_ATmega2560__)
-    else if (pin == 46) {
-	TCCR5A = 0;        // disable PWM
-	ICR5 = PWM_TOP;
-	TCCR5B = ((1 << WGM13) | (1 << CS10));
-	TCNT5 = 0;
-	TCCR5A |= _BV(COM5A1);
-    } else if (pin == 45) {
-	TCCR5A = 0;        // disable PWM
-	ICR5 = PWM_TOP;
-	TCCR5B = ((1 << WGM13) | (1 << CS10));
-	TCNT5 = 0;
-	TCCR5A |= _BV(COM5B1);
-    } else if (pin == 44) {
-	TCCR5A = 0;        // disable PWM
-	ICR5 = PWM_TOP;
-	TCCR5B = ((1 << WGM13) | (1 << CS10));
-	TCNT5 = 0;
-	TCCR5A |= _BV(COM5C1);
-    }
+#ifdef TCCR2A
+    case 3:
+        TCCR2A = _BV(COM2B1) | _BV(WGM20);      // Non-inverted, PWM Phase Corrected
+        TCCR2B = _BV(CS20) | _BV(WGM22);    // No prescaling, ditto
+        OCR2B = PWM_TOP;
+        TCNT2 = 0;
+        break;
 #endif
-    else {
-	// TODO
-    }
+#ifdef TCCR3A
+    case 5:
+        TCCR3A = 0;         // disable PWM
+        ICR3 = PWM_TOP;
+        TCCR3B = ((1 << WGM33) | (1 << CS30));
+        TCNT3 = 0;
+        TCCR3A |= _BV(COM3A1);
+        break;
 #endif
+#ifdef TCCR5A
+    case 46:
+        TCCR5A = 0;    // disable PWM
+        ICR5 = PWM_TOP;
+        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCNT5 = 0;
+        TCCR5A |= _BV(COM5A1);
+        break;
+    case 45:
+        TCCR5A = 0;    // disable PWM
+        ICR5 = PWM_TOP;
+        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCNT5 = 0;
+        TCCR5A |= _BV(COM5B1);
+        break;
+    case 44:
+        TCCR5A = 0;    // disable PWM
+        ICR5 = PWM_TOP;
+        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCNT5 = 0;
+        TCCR5A |= _BV(COM5C1);
+        break;
+#endif
+    default:
+        analogWrite(pin, 0);
+        break;
+    }
+
     // initialise random number seed
     seed0 = 0xecu;
     seed1 = 7;
@@ -469,62 +480,64 @@ static const int16_t PROGMEM Volume[8] =
 
 static void sound(byte b)
 {
-    // Update PWM volume 
+    // Update PWM volume
     b = (b & 15);
-#ifdef DACPIN
-	analogWrite(DACPIN,b*8);
-#else
-    uint16_t duty = pgm_read_word(&Volume[b >> 1]);	// get duty cycle     
-    if (pin == 10) {
-	if (duty != OCR1B) {
-	    TCNT1 = 0;
-	    OCR1B = duty;
-	}
-    } else if (pin == 9) {
-	if (duty != OCR1A) {
-	    TCNT1 = 0;
-	    OCR1A = duty;
-	}
-    }
-#if defined(__AVR_ATmega32U4__)
-	else if (pin == 5) {
-    if (duty != OCR3A) {
-        TCNT3 = 0;
-        OCR3A = duty;
-    }
-    }
-#else
-// Arduino Leonardo doesn't have Timer2.
-    else if (pin == 3) {
-	int8_t d = duty / 256;
-	if (d != OCR2B) {
-	    TCNT2 = 0;
-	    OCR2B = d;
-	}
-    }
+    uint16_t duty = pgm_read_word(&Volume[b >> 1]); // get duty cycle
+
+    switch (pin) {
+#ifdef TCCR1A:
+    case 10:
+        if (duty != OCR1B) {
+            TCNT1 = 0;
+            OCR1B = duty;
+        }
+        break;
+    case 9:
+        if (duty != OCR1A) {
+            TCNT1 = 0;
+            OCR1A = duty;
+        }
+        break;
 #endif
-#if defined(__AVR_ATmega2560__)
-    else if (pin == 46) {
-	if (duty != OCR5B) {
-	    TCNT5 = 0;
-	    OCR5B = duty;
-	}
-    } else if (pin == 45) {
-	if (duty != OCR5B) {
-	    TCNT5 = 0;
-	    OCR5B = duty;
-	}
-    } else if (pin == 44) {
-	if (duty != OCR5B) {
-	    TCNT5 = 0;
-	    OCR5B = duty;
-	}
-    }
+#ifdef TCCR2A:
+    case 3:
+        if ((duty / 256) != OCR2B) {
+            TCNT2 = 0;
+            OCR2B = duty / 256;
+        }
+        break;
 #endif
-    else {
-	// TODO
-    }
+#ifdef TCCR3A:
+    case 5:
+        if (duty != OCR3A) {
+            TCNT3 = 0;
+            OCR3A = duty;
+        }
+        break;
 #endif
+#ifdef TCCR5A:
+    case 46:
+        if (duty != OCR5B) {
+            TCNT5 = 0;
+            OCR5B = duty;
+        }
+        break;
+    case 45:
+        if (duty != OCR5B) {
+            TCNT5 = 0;
+            OCR5B = duty;
+        }
+        break;
+    case 44:
+        if (duty != OCR5B) {
+            TCNT5 = 0;
+            OCR5B = duty;
+        }
+        break;
+#endif
+    default:
+        analogWrite(pin, b*8);
+    }
 }
 
 static byte playTone(byte soundNum, byte soundPos, char pitch1,
@@ -556,6 +569,9 @@ TTS::TTS(int pin)
 {
     ::pin = pin;
     defaultPitch = 7;
+#ifdef __AVR__
+    pinMode(pin, OUTPUT);
+#endif
 }
 
 /*

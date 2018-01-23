@@ -36,7 +36,11 @@ class TTS {
      * pin is the PWM pin on which audio is output
      * (valid values: 9, 10, 3)
      */
-    TTS(int pin = 10);
+    TTS(int pin);
+
+#ifdef DACPIN
+    TTS(): TTS(DACPIN) {}
+#endif
 
     /**
      * speaks a string of (english) text
