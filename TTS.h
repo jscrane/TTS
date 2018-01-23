@@ -62,6 +62,7 @@ class TTS {
 
   private:
     byte defaultPitch;
+    int pin;
 };
 
 #endif
