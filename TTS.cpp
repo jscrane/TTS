@@ -23,8 +23,6 @@ static char phonemes[128];
 static char modifier[128];	// must be same size as 'phonemes'
 static char g_text[128];
 
-static byte defaultPitch = 7;
-
 // Lookup user specified pitch changes
 static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
 
@@ -557,16 +555,7 @@ static void play(byte duration, byte soundNumber)
 TTS::TTS(int pin)
 {
     ::pin = pin;
-}
-
-void TTS::setPitch(byte pitch)
-{
-    defaultPitch = pitch;
-}
-
-byte TTS::getPitch(void)
-{
-    return defaultPitch;
+    defaultPitch = 7;
 }
 
 /*

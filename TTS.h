@@ -51,12 +51,15 @@ class TTS {
     /**
      * sets the pitch; higher values: lower pitch
      */
-    void setPitch(byte pitch);
+    void setPitch(byte pitch) { defaultPitch = pitch; }
 
     /**
      * gets the pitch
      */
-    byte getPitch(void);
+    byte getPitch(void) { return defaultPitch; }
+
+  private:
+    byte defaultPitch;
 };
 
 #endif
