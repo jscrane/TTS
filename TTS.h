@@ -27,6 +27,8 @@
 #define DACPIN A12  // LC
 #elif defined(__SAM3X8E__)
 #define DACPIN DAC0   // DUE DAC0 or DAC1
+#else
+#define DACPIN 10     // AVR
 #endif
 
 class TTS {
@@ -36,11 +38,7 @@ class TTS {
      * pin is the PWM pin on which audio is output
      * (valid values: 9, 10, 3)
      */
-    TTS(int pin);
-
-#ifdef DACPIN
-    TTS(): TTS(DACPIN) {}
-#endif
+    TTS(int pin = DACPIN);
 
     /**
      * speaks a string of (english) text

@@ -366,14 +366,14 @@ static void soundOff(void)
         TCCR1A &= ~(_BV(COM1A1));
         break;
 #endif
-#ifdef TCCR2A
-    case 3:
-        TCCR2A &= ~(_BV(COM2B1));
-        break;
-#endif
 #ifdef TCCR3A
     case 5:
         TCCR3A = 0;// &= ~(_BV(COM3A1));
+        break;
+#endif
+#ifdef TCCR2A
+    case 3:
+        TCCR2A &= ~(_BV(COM2B1));
         break;
 #endif
 #ifdef TCCR5A
@@ -389,7 +389,6 @@ static void soundOff(void)
 #endif
     default:
         analogWrite(pin, 0);
-        return;
     }
 }
 
@@ -416,14 +415,6 @@ static void soundOn(void)
         TCCR1A |= _BV(COM1A1);
         break;
 #endif
-#ifdef TCCR2A
-    case 3:
-        TCCR2A = _BV(COM2B1) | _BV(WGM20);      // Non-inverted, PWM Phase Corrected
-        TCCR2B = _BV(CS20) | _BV(WGM22);    // No prescaling, ditto
-        OCR2B = PWM_TOP;
-        TCNT2 = 0;
-        break;
-#endif
 #ifdef TCCR3A
     case 5:
         TCCR3A = 0;         // disable PWM
@@ -431,6 +422,14 @@ static void soundOn(void)
         TCCR3B = ((1 << WGM33) | (1 << CS30));
         TCNT3 = 0;
         TCCR3A |= _BV(COM3A1);
+        break;
+#endif
+#ifdef TCCR2A
+    case 3:
+        TCCR2A = _BV(COM2B1) | _BV(WGM20);      // Non-inverted, PWM Phase Corrected
+        TCCR2B = _BV(CS20) | _BV(WGM22);    // No prescaling, ditto
+        OCR2B = PWM_TOP;
+        TCNT2 = 0;
         break;
 #endif
 #ifdef TCCR5A
@@ -482,7 +481,10 @@ static void sound(byte b)
 {
     // Update PWM volume
     b = (b & 15);
+
+#ifdef __AVR__
     uint16_t duty = pgm_read_word(&Volume[b >> 1]); // get duty cycle
+#endif
 
     switch (pin) {
 #ifdef TCCR1A:
@@ -499,19 +501,19 @@ static void sound(byte b)
         }
         break;
 #endif
-#ifdef TCCR2A:
-    case 3:
-        if ((duty / 256) != OCR2B) {
-            TCNT2 = 0;
-            OCR2B = duty / 256;
-        }
-        break;
-#endif
 #ifdef TCCR3A:
     case 5:
         if (duty != OCR3A) {
             TCNT3 = 0;
             OCR3A = duty;
+        }
+        break;
+#endif
+#ifdef TCCR2A:
+    case 3:
+        if ((duty / 256) != OCR2B) {
+            TCNT2 = 0;
+            OCR2B = duty / 256;
         }
         break;
 #endif
