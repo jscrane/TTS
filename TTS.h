@@ -18,27 +18,10 @@
 #include <inttypes.h>
 #include "english.h"
 
-// teensy DAC, set pin to enable teensy stuff, assume 8-bit DAC
-#if defined(__MK20DX256__)
-#define DACPIN A14   // T3.2
-#elif defined(__MK64FX512__) || defined(__MK66FX1M0__)
-#define DACPIN A21  // A21 or A22 T3.5 T3.6
-#elif defined(__MKL26Z64__)
-#define DACPIN A12  // LC
-#elif defined(__SAM3X8E__)
-#define DACPIN DAC0   // DUE DAC0 or DAC1
-#else
-#define DACPIN 10     // AVR
-#endif
-
 class TTS {
   public:
-    /**
-     * constructs a new text-to-speech
-     * pin is the PWM pin on which audio is output
-     * (valid values: 9, 10, 3)
-     */
-    TTS(int pin = DACPIN);
+
+    TTS(int pin);
 
     /**
      * speaks a string of (english) text
