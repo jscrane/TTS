@@ -20,8 +20,8 @@ static byte seed1;
 static byte seed2;
 
 static char phonemes[128];
-static char modifier[128];	// must be same size as 'phonemes'
-static char g_text[128];
+static char modifier[sizeof(phonemes)];	// must be same size as 'phonemes'
+static char g_text[sizeof(phonemes)];
 
 // Lookup user specified pitch changes
 static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
@@ -33,7 +33,7 @@ static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
 static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
 {
     for (unsigned int ph = 0; ph < numVocab; ph++) {
-	const char *txt = (const char *) pgm_read_word(&vocab[ph].txt);
+	const char *txt = (const char *)pgm_read_word(&vocab[ph].txt);
 	if (pgm_read_byte(&txt[0]) == token && pgm_read_byte(&txt[1]) == 0) {
 	    const char *src = (const char *)pgm_read_word(&vocab[ph].phoneme);
 	    while (pgm_read_byte(src)) {
@@ -85,8 +85,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 		if (nextCharIn >= 'a' && nextCharIn <= 'z')
 		    nextCharIn = nextCharIn - 'a' + 'A';
 
-		if (nextVocabChar == '#' && nextCharIn >= 'A'
-		    && nextCharIn <= 'Z') {
+		if (nextVocabChar == '#' && nextCharIn >= 'A' && nextCharIn <= 'Z') {
 		    wildcard = nextCharIn;	// The character equivalent to the '#'
 		    wildcardInPos = y;
 		    continue;
