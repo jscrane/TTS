@@ -374,8 +374,6 @@ static void soundOff(int pin)
         TCCR5A &= ~(_BV(COM5C1));
         break;
 #endif
-    default:
-        analogWrite(pin, 0);
     }
 }
 
@@ -442,9 +440,6 @@ static void soundOn(int pin)
         TCCR5A |= _BV(COM5C1);
         break;
 #endif
-    default:
-        analogWrite(pin, 0);
-        break;
     }
 
     // initialise random number seed
