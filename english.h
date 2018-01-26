@@ -1,17 +1,10 @@
 #ifndef _ENGLISH_
 #define _ENGLISH_
 
-#include <avr/pgmspace.h>
 /******************************************************************************
  * Definitions
  ******************************************************************************/
-//#define F_CPU 16000000
 #define TIME_FACTOR ((F_CPU+250000)/500000)
-
-#ifndef TRUE
-#define FALSE 0
-#define TRUE -1
-#endif 
 
 #define numVocab sizeof(s_vocab)/sizeof(VOCAB)
 #define numPhoneme sizeof(s_phonemes)/sizeof(PHONEME)
