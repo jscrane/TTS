@@ -492,9 +492,10 @@ static void sound(int pin, byte b)
 #endif
 #ifdef TCCR2A:
     case 3:
-        if ((duty / 256) != OCR2B) {
+	duty /= 256;
+        if (duty != OCR2B) {
             TCNT2 = 0;
-            OCR2B = duty / 256;
+            OCR2B = duty;
         }
         break;
 #endif
