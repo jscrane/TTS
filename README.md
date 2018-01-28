@@ -20,6 +20,13 @@
 
 ![alt tag](images/Arduino-LM386.png)
 
+Component choices in this circuit aren't very critical:
+- 22k (vs 27k) and 47n (vs 10n) parts in the input low-pass filter 
+- 100n (vs 10u) bypass capacitor between pin 7 and gnd
+- Used the inverting input instead of the non-inverting one (although in
+  this circuit I noticed no difference)
+- 47n (vs 100n) output snubber capacitor
+
 ## Credits
 - original implementation by Clive Webster in [Webbotlib](http://webbot.org.uk/iPoint/30.page)
 - ported to Arduino by [Gabriel Petrut](http://www.tehnorama.ro/minieric-modulul-de-control-si-sinteza-vocala/)
