@@ -21,7 +21,6 @@ static byte seed2;
 
 static char phonemes[128];
 static char modifier[sizeof(phonemes)];	// must be same size as 'phonemes'
-static char g_text[sizeof(phonemes)];
 
 // Lookup user specified pitch changes
 static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
@@ -33,9 +32,9 @@ static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
 static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
 {
     for (unsigned int ph = 0; ph < numVocab; ph++) {
-	const char *txt = (const char *)pgm_read_word(&vocab[ph].txt);
-	if (pgm_read_byte(&txt[0]) == token && pgm_read_byte(&txt[1]) == 0) {
-	    const char *src = (const char *)pgm_read_word(&vocab[ph].phoneme);
+	const void *txt = pgm_read_ptr(&vocab[ph].txt);
+	if (pgm_read_byte(txt) == token && pgm_read_byte(txt+1) == 0) {
+	    const void *src = pgm_read_ptr(&vocab[ph].phoneme);
 	    while (pgm_read_byte(src)) {
 		dest[x++] = pgm_read_byte(src);
 		src++;
@@ -76,11 +75,11 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	    char wildcard = 0;	// modifier
 	    int wildcardInPos = 0;
 	    boolean hasWhiteSpace = false;
-	    const char *text = (const char *)pgm_read_word(&vocab[ph].txt);
-	    const char *phon = (const char *)pgm_read_word(&vocab[ph].phoneme);
+	    const void *text = pgm_read_ptr(&vocab[ph].txt);
+	    const void *phon = pgm_read_ptr(&vocab[ph].phoneme);
 
 	    for (y = 0;; y++) {
-		char nextVocabChar = pgm_read_byte(&text[y]);
+		char nextVocabChar = pgm_read_byte(text+y);
 		char nextCharIn = (y + inIndex == -1) ? ' ' : src[y + inIndex];
 		if (nextCharIn >= 'a' && nextCharIn <= 'z')
 		    nextCharIn = nextCharIn - 'a' + 'A';
@@ -107,8 +106,8 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 		    break;
 	    }
 
-	    // See if its the longest complete match so far
-	    if (y <= maxMatch || pgm_read_byte(&text[y]))
+	    // See if it's the longest complete match so far
+	    if (y <= maxMatch || pgm_read_byte(text+y))
 		continue;
 
 	    // This is the longest complete match
@@ -118,11 +117,11 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 
 	    // Copy the matching phrase changing any '#' to the phoneme for the wildcard
 	    for (y = 0;; y++) {
-		char c = pgm_read_byte(&phon[y]);
+		char c = pgm_read_byte(phon+y);
 		if (c == 0)
 		    break;
 		if (c == '#') {
-		    if (pgm_read_byte(&phon[y + 1]) == 0) {
+		    if (pgm_read_byte(phon+y+1) == 0) {
 			// replacement ends in wildcard
 			maxWildcardPos = wildcardInPos;
 		    } else {
@@ -187,7 +186,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 	    int numChars;
 
 	    // Locate start of next phoneme 
-	    const char *ph_text = (const char *)pgm_read_word(&phoneme[ph].txt);
+	    const void *ph_text = pgm_read_ptr(&phoneme[ph].txt);
 
 	    // Set 'numChars' to the number of characters
 	    // that we match against this phoneme
@@ -198,7 +197,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 		if (nextChar >= 'A' && nextChar <= 'Z')
 		    nextChar = nextChar - 'A' + 'a';
 
-		if (nextChar != pgm_read_byte(&ph_text[numChars]))
+		if (nextChar != pgm_read_byte(ph_text+numChars))
 		    break;
 	    }
 
@@ -207,16 +206,16 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 		continue;
 
 	    // partial phoneme match
-	    if (pgm_read_byte(&ph_text[numChars]))
+	    if (pgm_read_byte(ph_text+numChars))
 		continue;
 
 	    // P7: we have matched the whole phoneme
 	    longestMatch = numChars;
 
 	    // Copy phoneme data to 'phonemes'
-	    const char *ph_ph = (const char *)pgm_read_word(&phoneme[ph].phoneme);
-	    for (numOut = 0; pgm_read_byte(&ph_ph[numOut]); numOut++)
-		phonemes[phonemeOut + numOut] = pgm_read_byte(&ph_ph[numOut]);
+	    const void *ph_ph = pgm_read_ptr(&phoneme[ph].phoneme);
+	    for (numOut = 0; pgm_read_byte(ph_ph+numOut); numOut++)
+		phonemes[phonemeOut + numOut] = pgm_read_byte(ph_ph+numOut);
 
 	    L81 = pgm_read_byte(&phoneme[ph].attenuate) + '0';
 	    anyMatch = true;	// phoneme match found
@@ -529,9 +528,9 @@ static byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pi
     const byte *soundData = &SoundData[soundNum * 0x40];
     while (count-- > 0) {
 	byte s = pgm_read_byte(&soundData[soundPos & 0x3fu]);
-	sound(pin, (byte)(s & volume));
+	sound(pin, s & volume);
 	pause(pitch1);
-	sound(pin, (byte)((s >> 4) & volume));
+	sound(pin, (s >> 4) & volume);
 	pause(pitch2);
 
 	soundPos++;
@@ -632,7 +631,7 @@ void TTS::sayPhonemes(const char *textp)
 		    // is positive
 		    if (byte1 == 2) {
 			// 64A4
-			// Make a white noise sound !
+			// Make a white noise sound!
 			byte volume = (duration == 6) ? 15 : 1;	// volume mask
 			for (duration <<= 2; duration > 0; duration--) {
 			    playTone(pin, sound1Num, random2(), 8, 12, 11, volume);
@@ -706,13 +705,13 @@ void TTS::sayPhonemes(const char *textp)
 
 		// s18
 		if (sound2Stop != 0x40) {
-		    SoundPos = playTone(pin, sound2Num, SoundPos, pitch2, pitch2, (byte)(sound2Stop - sound1End), 15);
+		    SoundPos = playTone(pin, sound2Num, SoundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
 		}
 		// s23
 		if (sound1Duration != 0xff && duration < byte2) {
 		    // Fade sound1 out
 		    sound1Duration -= fadeSpeed;
-		    if (sound1Duration >= (byte) 0xC8)
+		    if (sound1Duration >= 0xC8)
 			sound1Duration = 0;	// stop playing sound 1
 		}
 		// Call any additional sound
@@ -751,8 +750,8 @@ void TTS::sayPhonemes(const char *textp)
  */
 void TTS::sayText(const char *original)
 {
-    unsigned int i;
-    if (textToPhonemes(original, s_vocab, g_text)) {  
-	sayPhonemes(g_text);
-    }
+    static char text[sizeof(phonemes)];
+
+    if (textToPhonemes(original, s_vocab, text))
+	sayPhonemes(text);
 }
