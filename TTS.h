@@ -11,12 +11,8 @@
  * Modified to allow use of different PWM pins by Stephen Crane.
  */
 
-#ifndef TTS_h
-#define TTS_h
-
-#include <Arduino.h>
-#include <inttypes.h>
-#include "english.h"
+#ifndef _TTS_H_
+#define _TTS_H_
 
 class TTS {
   public:

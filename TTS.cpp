@@ -12,7 +12,15 @@
  * Modified for Timer5 on Arduino Mega2560 by Peter Dambrowsky.
  */
 
+#include <Arduino.h>
+
 #include "TTS.h"
+#include "english.h"
+
+#define TIME_FACTOR ((F_CPU+250000)/500000)
+
+#define NUM_VOCAB sizeof(s_vocab)/sizeof(VOCAB)
+#define NUM_PHONEME sizeof(s_phonemes)/sizeof(PHONEME)
 
 // Random number seed
 static byte seed0;
@@ -31,7 +39,7 @@ static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
  */
 static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
 {
-    for (unsigned int ph = 0; ph < numVocab; ph++) {
+    for (unsigned int ph = 0; ph < NUM_VOCAB; ph++) {
 	const void *txt = pgm_read_ptr(&vocab[ph].txt);
 	if (pgm_read_byte(txt) == token && pgm_read_byte(txt+1) == 0) {
 	    const void *src = pgm_read_ptr(&vocab[ph].phoneme);
@@ -70,7 +78,7 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	int maxWildcardPos = 0;
 
 	// Get next phoneme, P2
-	for (unsigned int ph = 0; ph < numVocab; ph++) {
+	for (unsigned int ph = 0; ph < NUM_VOCAB; ph++) {
 	    int y, x;
 	    char wildcard = 0;	// modifier
 	    int wildcardInPos = 0;
@@ -182,7 +190,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 	int numOut = 0;		// The number of bytes copied to the output for the longest match
 
 	// Get next phoneme, P2
-	for (unsigned int ph = 0; ph < numPhoneme; ph++) {
+	for (unsigned int ph = 0; ph < NUM_PHONEME; ph++) {
 	    int numChars;
 
 	    // Locate start of next phoneme 
@@ -245,19 +253,15 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 
 	// p13
 	L80 = L81;
-	if (longestMatch == 0 && !anyMatch) {
-	    //loggerP(PSTR("Mistake in speech at "));
-	    //logger(textp);
-	    //loggerCRLF();
+	if (longestMatch == 0 && !anyMatch)
 	    return 0;
-	}
+
 	// Move over the bytes we have copied to the output
 	phonemeOut += numOut;
 
-	if (phonemeOut > sizeof(phonemes) - 16) {
-	    //loggerP(PSTR("Line too long\n"));
+	if (phonemeOut > sizeof(phonemes) - 16)
 	    return 0;
-	}
+
 	// P16
 
 	// Copy the modifier setting to each sound data element for this phoneme
@@ -288,39 +292,15 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
     return 1;
 }
 
-/*
- * A delay loop that doesn't change with different optimisation settings
- */
-#ifdef __AVR__
-static void loops(byte delays)
+static void pause(byte d)
 {
-    __asm__ volatile ("1: dec %0" "\n\t" "brne 1b":"=r" (delays) :"0"(delays));
-}
-
-static void pause(byte delays)
-{
-    for (byte r = TIME_FACTOR; r > 0; r--)
-	loops(delays);
-}
-
-static void delay2(byte d)
-{
-    while (d--) {
-        pause(0);               // 256
-        pause(0);               // 256
-    }
-}
-#else
-static void pause(byte delays)
-{
-    delayMicroseconds(delays*6);
+    delayMicroseconds(d*6);
 }
 
 static void delay2(byte d)
 {
     delayMicroseconds(d*3127);
 }
-#endif
 
 /*
  * Generate a random number
@@ -386,14 +366,14 @@ static void soundOn(int pin)
         TCCR1A = 0;         // disable PWM
         ICR1 = PWM_TOP;
         // Set the Timer1 to use for PWM sound control
-        TCCR1B = ((1 << WGM13) | (1 << CS10));
+        TCCR1B = _BV(WGM13) | _BV(CS10);
         TCNT1 = 0;
         TCCR1A |= _BV(COM1B1);  // ENABLE PWM ON B2 USING OC1B, OCR1B
         break;
     case 9:
         TCCR1A = 0;         // disable PWM
         ICR1 = PWM_TOP;
-        TCCR1B = ((1 << WGM13) | (1 << CS10));
+        TCCR1B = _BV(WGM13) | _BV(CS10);
         TCNT1 = 0;
         TCCR1A |= _BV(COM1A1);
         break;
@@ -402,7 +382,7 @@ static void soundOn(int pin)
     case 5:
         TCCR3A = 0;         // disable PWM
         ICR3 = PWM_TOP;
-        TCCR3B = ((1 << WGM33) | (1 << CS30));
+        TCCR3B = _BV(WGM33) | _BV(CS30);
         TCNT3 = 0;
         TCCR3A |= _BV(COM3A1);
         break;
@@ -419,21 +399,21 @@ static void soundOn(int pin)
     case 46:
         TCCR5A = 0;    // disable PWM
         ICR5 = PWM_TOP;
-        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
         TCCR5A |= _BV(COM5A1);
         break;
     case 45:
         TCCR5A = 0;    // disable PWM
         ICR5 = PWM_TOP;
-        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
         TCCR5A |= _BV(COM5B1);
         break;
     case 44:
         TCCR5A = 0;    // disable PWM
         ICR5 = PWM_TOP;
-        TCCR5B = ((1 << WGM13) | (1 << CS10));
+        TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
         TCCR5A |= _BV(COM5C1);
         break;
@@ -452,7 +432,7 @@ static void soundOn(int pin)
 //PWM_TOP * 0.12, PWM_TOP * 0.25, PWM_TOP * 0.5 };
 
 // Linear scale
-static const int16_t PROGMEM Volume[8] =
+static const uint16_t PROGMEM Volume[8] =
     { 0, (uint16_t)(PWM_TOP * 0.07), (uint16_t)(PWM_TOP * 0.14), (uint16_t)(PWM_TOP * 0.21), (uint16_t)(PWM_TOP * 0.29),
     (uint16_t)(PWM_TOP * 0.36), (uint16_t)(PWM_TOP * 0.43), (uint16_t)(PWM_TOP * 0.5)
 };
@@ -586,7 +566,7 @@ void TTS::sayPhonemes(const char *textp)
 	// Q19
 	for (phonemeIn = 0, modifierIn = 0; phonemes[phonemeIn]; phonemeIn += 2, modifierIn += 2) {
 	    byte duration;	// duration from text line
-	    byte SoundPos;	// offset into sound data
+	    byte soundPos;	// offset into sound data
 	    byte fadeSpeed = 0;
 
 	    phoneme = phonemes[phonemeIn];
@@ -695,17 +675,17 @@ void TTS::sayPhonemes(const char *textp)
 		}
 	    }
 
-	    SoundPos = 0;
+	    soundPos = 0;
 	    do {
 		byte sound1Stop = (sound1Duration >> 2) & 0x3fu;
 		byte sound1End = min(sound1Stop, sound2Stop);
 
 		if (sound1Stop)
-		    SoundPos = playTone(pin, sound1Num, SoundPos, pitch1, pitch1, sound1End, 15);
+		    soundPos = playTone(pin, sound1Num, soundPos, pitch1, pitch1, sound1End, 15);
 
 		// s18
 		if (sound2Stop != 0x40) {
-		    SoundPos = playTone(pin, sound2Num, SoundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
+		    soundPos = playTone(pin, sound2Num, soundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
 		}
 		// s23
 		if (sound1Duration != 0xff && duration < byte2) {

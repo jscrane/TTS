@@ -1,22 +1,14 @@
-#ifndef _ENGLISH_
-#define _ENGLISH_
-
-/******************************************************************************
- * Definitions
- ******************************************************************************/
-#define TIME_FACTOR ((F_CPU+250000)/500000)
-
-#define numVocab sizeof(s_vocab)/sizeof(VOCAB)
-#define numPhoneme sizeof(s_phonemes)/sizeof(PHONEME)
+#ifndef _ENGLISH_H_
+#define _ENGLISH_H_
 
 typedef struct Vocab {
-	const char* txt;
-	const char* phoneme;
+	const char *txt;
+	const char *phoneme;
 } VOCAB;
 
 typedef struct Phoneme {
-	const char* txt;
-	const char* phoneme;
+	const char *txt;
+	const char *phoneme;
 	uint8_t attenuate;
 } PHONEME;
 
@@ -27,9 +19,8 @@ typedef struct strSoundIndex{
 } SOUND_INDEX;
 
 /*
-* Define vocabulary and phonemes for English
-*
-*/
+ * vocabulary and phonemes for English
+ */
 
 static const char v1a[] PROGMEM="OUS_";
 static const char v1b[] PROGMEM="/U5S";
