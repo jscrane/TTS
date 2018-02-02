@@ -42,7 +42,7 @@ static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
     for (unsigned int ph = 0; ph < NUM_VOCAB; ph++) {
 	const void *txt = pgm_read_ptr(&vocab[ph].txt);
 	if (pgm_read_byte(txt) == token && pgm_read_byte(txt+1) == 0) {
-	    const void *src = pgm_read_ptr(&vocab[ph].phoneme);
+	    const char *src = (const char *)pgm_read_ptr(&vocab[ph].phoneme);
 	    while (pgm_read_byte(src)) {
 		dest[x++] = pgm_read_byte(src);
 		src++;
