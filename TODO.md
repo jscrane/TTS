@@ -1,0 +1,2 @@
+- support for other languages
+- support pwm on non-avr architectures (e.g., esp8266)
