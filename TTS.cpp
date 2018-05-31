@@ -325,31 +325,31 @@ static void soundOff(int pin)
     switch (pin) {
 #ifdef TCCR1A
     case 10:
-        TCCR1A &= ~(_BV(COM1B1));       // Disable PWM
+        TCCR1A &= ~_BV(COM1B1);		// Disable PWM
         break;
     case 9:
-        TCCR1A &= ~(_BV(COM1A1));
+        TCCR1A &= ~_BV(COM1A1);
         break;
 #endif
 #ifdef TCCR3A
     case 5:
-        TCCR3A = 0;// &= ~(_BV(COM3A1));
+        TCCR3A = 0;// &= ~_BV(COM3A1);
         break;
 #endif
 #ifdef TCCR2A
     case 3:
-        TCCR2A &= ~(_BV(COM2B1));
+        TCCR2A &= ~_BV(COM2B1);
         break;
 #endif
 #ifdef TCCR5A
     case 46:
-        TCCR5A &= ~(_BV(COM5A1));
+        TCCR5A &= ~_BV(COM5A1);
         break;
     case 45:
-        TCCR5A &= ~(_BV(COM5B1));
+        TCCR5A &= ~_BV(COM5B1);
         break;
     case 44:
-        TCCR5A &= ~(_BV(COM5C1));
+        TCCR5A &= ~_BV(COM5C1);
         break;
 #endif
     }
@@ -363,15 +363,14 @@ static void soundOn(int pin)
     switch (pin) {
 #ifdef TCCR1A
     case 10:
-        TCCR1A = 0;         // disable PWM
+        TCCR1A = 0;
         ICR1 = PWM_TOP;
-        // Set the Timer1 to use for PWM sound control
         TCCR1B = _BV(WGM13) | _BV(CS10);
         TCNT1 = 0;
-        TCCR1A |= _BV(COM1B1);  // ENABLE PWM ON B2 USING OC1B, OCR1B
+        TCCR1A |= _BV(COM1B1);
         break;
     case 9:
-        TCCR1A = 0;         // disable PWM
+        TCCR1A = 0;
         ICR1 = PWM_TOP;
         TCCR1B = _BV(WGM13) | _BV(CS10);
         TCNT1 = 0;
@@ -380,7 +379,7 @@ static void soundOn(int pin)
 #endif
 #ifdef TCCR3A
     case 5:
-        TCCR3A = 0;         // disable PWM
+        TCCR3A = 0;
         ICR3 = PWM_TOP;
         TCCR3B = _BV(WGM33) | _BV(CS30);
         TCNT3 = 0;
@@ -389,29 +388,29 @@ static void soundOn(int pin)
 #endif
 #ifdef TCCR2A
     case 3:
-        TCCR2A = _BV(COM2B1) | _BV(WGM20);      // Non-inverted, PWM Phase Corrected
-        TCCR2B = _BV(CS20) | _BV(WGM22);    // No prescaling, ditto
+        TCCR2A = _BV(COM2B1) | _BV(WGM20);	// Non-inverted, PWM Phase Corrected
+        TCCR2B = _BV(CS20) | _BV(WGM22);	// No prescaling, ditto
         OCR2B = PWM_TOP;
         TCNT2 = 0;
         break;
 #endif
 #ifdef TCCR5A
     case 46:
-        TCCR5A = 0;    // disable PWM
+        TCCR5A = 0;
         ICR5 = PWM_TOP;
         TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
         TCCR5A |= _BV(COM5A1);
         break;
     case 45:
-        TCCR5A = 0;    // disable PWM
+        TCCR5A = 0;
         ICR5 = PWM_TOP;
         TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
         TCCR5A |= _BV(COM5B1);
         break;
     case 44:
-        TCCR5A = 0;    // disable PWM
+        TCCR5A = 0;
         ICR5 = PWM_TOP;
         TCCR5B = _BV(WGM13) | _BV(CS10);
         TCNT5 = 0;
@@ -419,23 +418,7 @@ static void soundOn(int pin)
         break;
 #endif
     }
-
-    // initialise random number seed
-    seed0 = 0xecu;
-    seed1 = 7;
-    seed2 = 0xcfu;
 }
-
-// Logarithmic scale
-//static const int16_t PROGMEM Volume[8] =
-    //{ 0, PWM_TOP * 0.01, PWM_TOP * 0.02, PWM_TOP * 0.03, PWM_TOP * 0.06,
-//PWM_TOP * 0.12, PWM_TOP * 0.25, PWM_TOP * 0.5 };
-
-// Linear scale
-static const uint16_t PROGMEM Volume[8] =
-    { 0, (uint16_t)(PWM_TOP * 0.07), (uint16_t)(PWM_TOP * 0.14), (uint16_t)(PWM_TOP * 0.21), (uint16_t)(PWM_TOP * 0.29),
-    (uint16_t)(PWM_TOP * 0.36), (uint16_t)(PWM_TOP * 0.43), (uint16_t)(PWM_TOP * 0.5)
-};
 
 static void sound(int pin, byte b)
 {
@@ -443,7 +426,7 @@ static void sound(int pin, byte b)
     b = (b & 15);
 
 #ifdef __AVR__
-    uint16_t duty = pgm_read_word(&Volume[b >> 1]); // get duty cycle
+    uint16_t duty = (PWM_TOP * b) >> 4;
 #endif
 
     switch (pin) {
@@ -558,6 +541,11 @@ void TTS::sayPhonemes(const char *textp)
     if (phonemesToData(textp, s_phonemes)) {
 	// phonemes has list of sound bytes
 	soundOn(pin);
+
+	// initialise random number seed
+	seed0 = 0xecu;
+	seed1 = 7;
+	seed2 = 0xcfu;
 
 	// _630C
 	byte1 = 0;
