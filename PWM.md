@@ -14,7 +14,7 @@ duty-cycle. The duty-cycle is the ratio of time spent high to the total
 cycle time. The AVR's built-in timers are used to determine both the
 frequency and the duty-cycle.
 
-Sound is initialised around line 374 in soundOn:
+Sound is initialised in soundOn():
 
 ```c++
 	TCCR1A = 0;
@@ -34,7 +34,7 @@ The PWM frequency in this mode is given by the formula:
 Here Clock = 16e6, Prescaler = 1 (set by CS10 above) and TOP = 1200/2.
 This gives a fixed frequency of about 13kHz.
 
-The PWM duty cycle is changed around line 450 in sound:
+The PWM duty cycle is changed in sound():
 
 ```c++
 	if (duty != OCR1A) {
@@ -49,12 +49,3 @@ causes the output on OC1A to flip:
 - when it reaches OCR1A it sets OC1A low and counts to TOP (ICR1),
 - when it reaches TOP it starts counting down again,
 - when it reaches OCR1A again, it sets OC1A high and counts to BOTTOM (0).
-
-The value of "duty" is obtained from an array of size 8, "Volume":
-
-```c++
-	uint16_t duty = pgm_read_word(&Volume[b >> 1]);
-```
-
-Values of "Volume" range from 0 to TOP*0.5, meaning the maximum duty-cycle
-is 50%.
