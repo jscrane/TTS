@@ -1,6 +1,11 @@
 #include <Arduino.h>
 #include "sound.h"
 
+#ifdef ESP32
+#include <driver/dac.h>
+#define CHANNEL_FOR(p) (p == 25)? DAC_CHANNEL_1: DAC_CHANNEL_2
+#endif
+
 void soundOff(int pin)
 {
 
@@ -37,6 +42,9 @@ void soundOff(int pin)
         break;
 #endif
     }
+
+#elif defined(ESP32)
+    dac_output_disable(CHANNEL_FOR(pin));
 
 #else
 
@@ -112,6 +120,9 @@ void soundOn(int pin)
 
     analogWriteFreq(12000);
     analogWriteRange(PWM_TOP);
+#elif defined(ESP32)
+
+    dac_output_enable(CHANNEL_FOR(pin));
 #endif
 }
 
@@ -177,9 +188,11 @@ void sound(int pin, byte b)
         break;
 #endif
     }
+#elif defined(ESP32)
+
+    dac_output_voltage(CHANNEL_FOR(pin), b*8);
 #else
 
     analogWrite(pin, b*8);
-
 #endif
 }
