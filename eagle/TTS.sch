@@ -16160,7 +16160,7 @@ Source: AVX .. aphvc.pdf</description>
 <part name="R2" library="resistor" deviceset="R-EU_" device="0207/10" value="27k"/>
 <part name="R1" library="resistor" deviceset="R-EU_" device="0207/10" value="27k"/>
 <part name="R3" library="resistor" deviceset="R-EU_" device="0207/10" value="10R"/>
-<part name="JP1" library="pinhead" deviceset="PINHD-1X3" device="" value="In"/>
+<part name="JP1" library="pinhead" deviceset="PINHD-1X3" device="" value="- In +"/>
 <part name="JP2" library="pinhead" deviceset="PINHD-1X2" device="" value="Out"/>
 <part name="P+1" library="supply1" deviceset="VCC" device=""/>
 <part name="P+2" library="supply1" deviceset="VCC" device=""/>
