@@ -1,7 +1,7 @@
 How PWM is used for TTS
 -----------------------
 
-We'll analyze the code for speech output on Arduino pin 9. This is
+We'll analyze the code for speech output on Arduino pin 9, on an ATMega328. This is
 hardware pin 15 (known here as OC1A).
 
 A good introduction to PWM can be found 
