@@ -2,8 +2,9 @@ View this project on [CADLAB.io](https://cadlab.io/project/1281).
 
 # TTS
 
-## Text-to-Speech for Arduino
+## Text-to-Speech Library for Arduino
 
+- checkout this project into your ``sketchbook/libraries`` folder
 - requires an amplifier on the PWM output pin (see below)
 - see [blog articles](http://programmablehardware.blogspot.ie/search/label/tts)
 
