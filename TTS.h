@@ -39,7 +39,6 @@ class TTS {
      */
     TTS(data_callback_type cb, int len=512) {
       sound_api = new SoundCallback(cb,len);
-      pin = -1;
       defaultPitch = 7;
     }
 
@@ -77,11 +76,10 @@ class TTS {
 
   private:
     byte defaultPitch;
-    int pin;
     BaseSound *sound_api = nullptr;
 
-    void play(int pin, byte duration, byte soundNumber);
-    byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume);
+    void play(byte duration, byte soundNumber);
+    byte playTone(byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume);
 
 
 };

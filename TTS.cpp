@@ -318,7 +318,7 @@ static byte random2(void)
     return seed0;
 }
 
-byte TTS::playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
+byte TTS::playTone(byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
 {
     const byte *soundData = &SoundData[soundNum * 0x40];
     while (count-- > 0) {
@@ -333,10 +333,10 @@ byte TTS::playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitc
     return soundPos & 0x3fu;
 }
 
-void TTS::play(int pin, byte duration, byte soundNumber)
+void TTS::play(byte duration, byte soundNumber)
 {
     while (duration--)
-	playTone(pin, soundNumber, random2(), 7, 7, 10, 15);
+	playTone(soundNumber, random2(), 7, 7, 10, 15);
 }
 
 /******************************************************************************
@@ -346,18 +346,16 @@ void TTS::play(int pin, byte duration, byte soundNumber)
 
 TTS::TTS()
 {
-    pin = DEFAULT_PIN;
-	sound_api = new Sound(pin);
+	sound_api = new Sound(DEFAULT_PIN);
     defaultPitch = 7;
 #ifdef __AVR__
-    pinMode(pin, OUTPUT);
+    pinMode(DEFAULT_PIN, OUTPUT);
 #endif
 }
 
 
 TTS::TTS(int p)
 {
-    pin = p;
 	sound_api = new Sound(p);
     defaultPitch = 7;
 #ifdef __AVR__
@@ -448,7 +446,7 @@ void TTS::sayPhonemes(const char *textp)
 			// Make a white noise sound!
 			byte volume = (duration == 6) ? 15 : 1;	// volume mask
 			for (duration <<= 2; duration > 0; duration--) {
-			    playTone(pin, sound1Num, random2(), 8, 12, 11, volume);
+			    playTone(sound1Num, random2(), 8, 12, 11, volume);
 			    // Increase the volume
 			    if (++volume == 16)
 				volume = 15;	// full volume from now on
@@ -515,11 +513,11 @@ void TTS::sayPhonemes(const char *textp)
 		byte sound1End = min(sound1Stop, sound2Stop);
 
 		if (sound1Stop)
-		    soundPos = playTone(pin, sound1Num, soundPos, pitch1, pitch1, sound1End, 15);
+		    soundPos = playTone(sound1Num, soundPos, pitch1, pitch1, sound1End, 15);
 
 		// s18
 		if (sound2Stop != 0x40) {
-		    soundPos = playTone(pin, sound2Num, soundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
+		    soundPos = playTone(sound2Num, soundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
 		}
 		// s23
 		if (sound1Duration != 0xff && duration < byte2) {
@@ -530,13 +528,13 @@ void TTS::sayPhonemes(const char *textp)
 		}
 		// Call any additional sound
 		if (byte1 == -1)
-		    play(pin, 3, 30);	// make an 'f' sound
+		    play(3, 30);	// make an 'f' sound
 		else if (byte1 == -2)
-		    play(pin, 3, 29);	// make an 's' sound
+		    play(3, 29);	// make an 's' sound
 		else if (byte1 == -3)
-		    play(pin, 3, 33);	// make a 'th' sound
+		    play(3, 33);	// make a 'th' sound
 		else if (byte1 == -4)
-		    play(pin, 3, 27);	// make a 'sh' sound
+		    play(3, 27);	// make a 'sh' sound
 
 	    } while (--duration);
 
