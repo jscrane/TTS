@@ -20,6 +20,11 @@
 
 class TTS {
   public:
+    /**
+     * @brief Construct a new TTS object using the default pin
+     * 
+     */
+    TTS();
 
     /**
      * @brief Construct a new TTS object

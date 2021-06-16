@@ -1,4 +1,7 @@
-
+/**
+ * @brief Example with Callback which just prints the result 
+ * 
+ */
 #include "TTS.h"
 
 void data_callback(int len, byte *data){

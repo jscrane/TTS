@@ -6,6 +6,12 @@
 #define CHANNEL_FOR(p) (p == 25)? DAC_CHANNEL_1: DAC_CHANNEL_2
 #endif
 
+Sound::Sound(int pin)
+{
+    this->pin = pin;
+}
+
+
 void Sound::soundOff()
 {
 

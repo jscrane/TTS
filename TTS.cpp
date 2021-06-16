@@ -342,6 +342,19 @@ void TTS::play(int pin, byte duration, byte soundNumber)
 /******************************************************************************
  * User API
  ******************************************************************************/
+
+
+TTS::TTS()
+{
+    pin = DEFAULT_PIN;
+	sound_api = new Sound(pin);
+    defaultPitch = 7;
+#ifdef __AVR__
+    pinMode(pin, OUTPUT);
+#endif
+}
+
+
 TTS::TTS(int p)
 {
     pin = p;
