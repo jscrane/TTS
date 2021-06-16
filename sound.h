@@ -10,13 +10,13 @@
 #define DEFAULT_PIN 16
 #elif defined(__arm__) 
 #define DEFAULT_PIN DAC0
-#elif defined(__AVR__) 
-#define DEFAULT_PIN 3
 #elif defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
 #define DEFAULT_PIN 44
+#elif defined(__AVR__) 
+#define DEFAULT_PIN 3
 #endif
 
-// Define collback data type
+// Define callback data type
 typedef void (*data_callback_type)(int len, byte *data);
 
 /**
