@@ -16,7 +16,6 @@
 
 #include "TTS.h"
 #include "english.h"
-#include "sound.h"
 
 #define NUM_VOCAB sizeof(s_vocab)/sizeof(VOCAB)
 #define NUM_PHONEME sizeof(s_phonemes)/sizeof(PHONEME)
@@ -319,14 +318,14 @@ static byte random2(void)
     return seed0;
 }
 
-static byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
+byte TTS::playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
 {
     const byte *soundData = &SoundData[soundNum * 0x40];
     while (count-- > 0) {
 	byte s = pgm_read_byte(&soundData[soundPos & 0x3fu]);
-	sound(pin, s & volume);
+	sound_api->sound(s & volume);
 	pause(pitch1);
-	sound(pin, (s >> 4) & volume);
+	sound_api->sound((s >> 4) & volume);
 	pause(pitch2);
 
 	soundPos++;
@@ -334,7 +333,7 @@ static byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pi
     return soundPos & 0x3fu;
 }
 
-static void play(int pin, byte duration, byte soundNumber)
+void TTS::play(int pin, byte duration, byte soundNumber)
 {
     while (duration--)
 	playTone(pin, soundNumber, random2(), 7, 7, 10, 15);
@@ -346,6 +345,7 @@ static void play(int pin, byte duration, byte soundNumber)
 TTS::TTS(int p)
 {
     pin = p;
+	sound_api = new Sound(p);
     defaultPitch = 7;
 #ifdef __AVR__
     pinMode(pin, OUTPUT);
@@ -373,7 +373,7 @@ void TTS::sayPhonemes(const char *textp)
 
     if (phonemesToData(textp, s_phonemes)) {
 	// phonemes has list of sound bytes
-	soundOn(pin);
+	sound_api->soundOn();
 
 	// initialise random number seed
 	seed0 = 0xecu;
@@ -543,7 +543,7 @@ void TTS::sayPhonemes(const char *textp)
 		delay2(25);
 	}			// next phoneme
     }
-    soundOff(pin);
+    sound_api->soundOff();
 }
 
 /*

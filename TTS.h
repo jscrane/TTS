@@ -13,11 +13,41 @@
 
 #ifndef _TTS_H_
 #define _TTS_H_
+#include "sound.h"
+
+// acess to sound implementation, some methods are static so this needs to be static as well...
+
 
 class TTS {
   public:
 
+    /**
+     * @brief Construct a new TTS object
+     * 
+     * @param pin 
+     */
     TTS(int pin);
+
+    /**
+     * @brief Construct a new TTS object - Uses the Callback to provide the result
+     * 
+     */
+    TTS(data_callback_type cb, int len=512) {
+      sound_api = new SoundCallback(cb,len);
+      pin = -1;
+      defaultPitch = 7;
+    }
+
+    /**
+     * @brief Destroy the TTS object
+     * 
+     */
+    ~TTS(){
+      if(sound_api!=nullptr) {
+        delete sound_api;
+      }
+    }
+
 
     /**
      * speaks a string of (english) text
@@ -39,9 +69,16 @@ class TTS {
      */
     byte getPitch(void) { return defaultPitch; }
 
+
   private:
     byte defaultPitch;
     int pin;
+    BaseSound *sound_api = nullptr;
+
+    void play(int pin, byte duration, byte soundNumber);
+    byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume);
+
+
 };
 
 #endif

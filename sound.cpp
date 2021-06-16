@@ -6,7 +6,7 @@
 #define CHANNEL_FOR(p) (p == 25)? DAC_CHANNEL_1: DAC_CHANNEL_2
 #endif
 
-void soundOff(int pin)
+void Sound::soundOff()
 {
 
 #if defined(__AVR__)
@@ -53,7 +53,7 @@ void soundOff(int pin)
 }
 
 //https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328
-void soundOn(int pin)
+void Sound::soundOn()
 {
 
 #if defined(__AVR__)
@@ -126,7 +126,7 @@ void soundOn(int pin)
 #endif
 }
 
-void sound(int pin, byte b)
+void Sound::sound(byte b)
 {
     // Update PWM volume
     b = (b & 15);
@@ -195,4 +195,30 @@ void sound(int pin, byte b)
 
     analogWrite(pin, b*8);
 #endif
+
+}
+
+
+void SoundCallback::soundOff(){
+    callback(current_length, out_data);
+    for (int j=0;j<current_length;j++){
+        out_data[j]=0;
+    }
+    current_length = 0;
+    active = false;
+}
+
+void SoundCallback::soundOn() {
+    active = true;
+}
+
+void SoundCallback::sound(byte b) {
+    out_data[current_length++] =  b ;
+    if (current_length==max_length){
+        if (callback!=nullptr) callback(current_length, out_data);
+        for (int j=0;j<current_length;j++){
+            out_data[j]=0;
+        }
+        current_length = 0;
+    }
 }
