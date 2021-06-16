@@ -11,6 +11,9 @@ TTS tts; // with default pin
 
 void setup(){
   Serial.begin(115200);
+  // display pin
+  Serial.print("Using Pin ");
+  Serial.println(DEFAULT_PIN);
 }
 
 void loop(){
