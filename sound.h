@@ -17,7 +17,7 @@
 #endif
 
 // Define callback data type
-typedef void (*data_callback_type)(int len, byte *data);
+typedef void (*tts_data_callback_type)(void *tts, int len, byte *data);
 
 /**
  * @brief Base Output Class
@@ -55,11 +55,12 @@ class Sound : public BaseSound {
  */
 class SoundCallback : public BaseSound {
     public:    
-        SoundCallback(data_callback_type callback, int len=512){
+        SoundCallback(tts_data_callback_type callback, void *tts, int len=512){
             // allocate result array
+            this->tts = tts;
+            this->tts_callback = callback;
+            this->out_data = new byte[len+1];
             this->max_length = len;
-            this->callback = callback;
-            this->out_data = new byte[max_length];
         }
 
         ~SoundCallback(){
@@ -71,11 +72,13 @@ class SoundCallback : public BaseSound {
         void sound(byte b);
 
     private:
-        data_callback_type callback = nullptr;
+        void *tts;
+        tts_data_callback_type tts_callback = nullptr;
         byte *out_data = nullptr;
         int max_length = 0;
         int current_length = 0;
         bool active = false;
+
 
 };
 

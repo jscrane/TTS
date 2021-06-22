@@ -204,12 +204,9 @@ void Sound::sound(byte b)
 
 }
 
-
 void SoundCallback::soundOff(){
-    callback(current_length, out_data);
-    for (int j=0;j<current_length;j++){
-        out_data[j]=0;
-    }
+    (*tts_callback)(tts, current_length, out_data);
+    memset(out_data,0, current_length);
     current_length = 0;
     active = false;
 }
@@ -220,11 +217,11 @@ void SoundCallback::soundOn() {
 
 void SoundCallback::sound(byte b) {
     out_data[current_length++] =  b ;
-    if (current_length==max_length){
-        if (callback!=nullptr) callback(current_length, out_data);
-        for (int j=0;j<current_length;j++){
-            out_data[j]=0;
+    if (current_length>=max_length){
+        if (tts_callback!=nullptr) {
+            (*tts_callback)(tts, current_length, out_data);
         }
+        memset(out_data, 0, current_length);
         current_length = 0;
     }
 }

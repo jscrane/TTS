@@ -28,6 +28,7 @@ static byte seed2;
 static char phonemes[128];
 static char modifier[sizeof(phonemes)];	// must be same size as 'phonemes'
 
+
 // Lookup user specified pitch changes
 static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
 
@@ -344,24 +345,33 @@ void TTS::play(byte duration, byte soundNumber)
  ******************************************************************************/
 
 
-TTS::TTS()
-{
-	sound_api = new Sound(DEFAULT_PIN);
-    defaultPitch = 7;
-#ifdef __AVR__
-    pinMode(DEFAULT_PIN, OUTPUT);
-#endif
-}
-
-
 TTS::TTS(int p)
 {
 	sound_api = new Sound(p);
     defaultPitch = 7;
+	stream_ptr = nullptr;         
 #ifdef __AVR__
     pinMode(pin, OUTPUT);
 #endif
 }
+
+TTS::TTS(tts_data_callback_type cb, int len) {
+	sound_api = new SoundCallback(cb, this, len);
+	defaultPitch = 7;
+	stream_ptr = nullptr;         
+}
+
+/**
+	* @brief Construct a new TTS object which outputs the data to an Arduino Stream
+	* 
+	* @param out 
+	*/
+TTS::TTS(Stream &out) { 
+	stream_ptr = &out;         
+	sound_api = new SoundCallback((tts_data_callback_type)TTS::stream_data_callback, this, 512);
+	defaultPitch = 7;
+}
+
 
 /*
  * Speak a string of phonemes
@@ -567,3 +577,7 @@ void TTS::sayText(const char *original)
     if (textToPhonemes(original, s_vocab, text))
 	sayPhonemes(text);
 }
+
+
+
+
