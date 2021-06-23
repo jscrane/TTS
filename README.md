@@ -5,8 +5,10 @@ View this project on [CADLAB.io](https://cadlab.io/project/1281).
 ## Text-to-Speech Library for Arduino
 
 - checkout this project into your ``sketchbook/libraries`` folder
-- requires an amplifier on the PWM output pin (see below) or callback method
+- requires an amplifier on the PWM output pin (see below) 
+- alternative output via Stream or callback method
 - see [blog articles](http://programmablehardware.blogspot.ie/search/label/tts)
+
 
 ## Supported Hardware
 
@@ -43,3 +45,4 @@ and ARM processors with DAC (Teensy, Due)
 - Teensy [forum](https://forum.pjrc.com/threads/44587-TTS-(Text-to-Speech)-Library-Port)
 - separate port/hack for MBED ARM with DAC [repository](https://developer.mbed.org/users/manitou/code/tts/)
 - Hackaday article on [LM386 amplifiers](https://hackaday.com/2016/12/07/you-can-have-my-lm386s-when-you-pry-them-from-my-cold-dead-hands/)
+- Example on how to use the [Output via Streams](https://www.pschatzmann.ch/home/2021/06/22/text-to-speach-in-arduino-using-tts/) 

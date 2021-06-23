@@ -15,11 +15,20 @@
 #define _TTS_H_
 #include "sound.h"
 
+/**
+ * @brief TTS Output Information 
+ * 
+ */
 struct TTSInfo {
   int channels = 1;
   int sample_rate = 12000;
   int bits_per_sample = 8;
 };
+
+/**
+ * @brief TTS API
+ * 
+ */
 
 class TTS {
   public:
