@@ -50,7 +50,7 @@ class TTS {
      * 
      * @param out 
      */
-    TTS(Stream &out);
+    TTS(Print &out);
 
     /**
      * @brief Destroy the TTS object
@@ -99,7 +99,7 @@ class TTS {
   protected:
     byte defaultPitch;
     BaseSound *sound_api = nullptr;
-    Stream *stream_ptr = nullptr;
+    Print *stream_ptr = nullptr;
 
     void play(byte duration, byte soundNumber);
     byte playTone(byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume);
