@@ -50,7 +50,7 @@ class TTS {
      * 
      * @param out 
      */
-    TTS(Print &out);
+    TTS(Print &out, int bits_per_sample=16);
 
     /**
      * @brief Destroy the TTS object
@@ -88,8 +88,8 @@ class TTS {
      * 
      * @return TTSInfo 
      */
-    static TTSInfo getInfo() {
-      TTSInfo info;
+    static TTSInfo& getInfo() {
+      static TTSInfo info;
       return info;
     }
 
@@ -107,13 +107,22 @@ class TTS {
     // callback to write sound data to stream
     static void stream_data_callback(void *vtts, int len, byte *data){
       TTS *tts = (TTS *) vtts;
+      TTSInfo *info = &getInfo();
       if (tts->stream_ptr!=nullptr && len>0 && data!=nullptr){
-        tts->stream_ptr->write((const char*)data, len);
+        if (info->bits_per_sample==8){
+          tts->stream_ptr->write((const char*)data, len);
+        } else {
+          // convert 8 to 16 bits
+          for (int j=0;j<len;j++){
+            int8_t sample = data[j];
+            int16_t sample16 = sample<<8;
+            tts->stream_ptr->write((const char*)&sample16, 2);
+          }
+        }
       }
     }
 
 };
-
 
 
 

@@ -366,10 +366,11 @@ TTS::TTS(tts_data_callback_type cb, int len) {
 	* 
 	* @param out 
 	*/
-TTS::TTS(Print &out) { 
+TTS::TTS(Print &out, int bits_per_sample) { 
 	stream_ptr = &out;         
 	sound_api = new SoundCallback((tts_data_callback_type)TTS::stream_data_callback, this, 512);
 	defaultPitch = 7;
+	getInfo().bits_per_sample = bits_per_sample;
 }
 
 
