@@ -39,9 +39,9 @@ static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
 static int copyToken(char token, char *dest, int x, const VOCAB * vocab)
 {
     for (unsigned int ph = 0; ph < NUM_VOCAB; ph++) {
-	const void *txt = pgm_read_ptr(&vocab[ph].txt);
+	const byte *txt = (const byte *)pgm_read_ptr(&vocab[ph].txt);
 	if (pgm_read_byte(txt) == token && pgm_read_byte(txt+1) == 0) {
-	    const char *src = (const char *)pgm_read_ptr(&vocab[ph].phoneme);
+	    const byte *src = (const byte *)pgm_read_ptr(&vocab[ph].phoneme);
 	    while (pgm_read_byte(src)) {
 		dest[x++] = pgm_read_byte(src);
 		src++;
@@ -82,8 +82,8 @@ static int textToPhonemes(const char *src, const VOCAB * vocab, char *dest)
 	    char wildcard = 0;	// modifier
 	    int wildcardInPos = 0;
 	    boolean hasWhiteSpace = false;
-	    const void *text = pgm_read_ptr(&vocab[ph].txt);
-	    const void *phon = pgm_read_ptr(&vocab[ph].phoneme);
+	    const byte *text = (const byte *)pgm_read_ptr(&vocab[ph].txt);
+	    const byte *phon = (const byte *)pgm_read_ptr(&vocab[ph].phoneme);
 
 	    for (y = 0;; y++) {
 		char nextVocabChar = pgm_read_byte(text+y);
@@ -193,7 +193,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 	    int numChars;
 
 	    // Locate start of next phoneme 
-	    const void *ph_text = pgm_read_ptr(&phoneme[ph].txt);
+	    const byte *ph_text = (const byte *)pgm_read_ptr(&phoneme[ph].txt);
 
 	    // Set 'numChars' to the number of characters
 	    // that we match against this phoneme
@@ -220,7 +220,7 @@ static int phonemesToData(const char *textp, const PHONEME * phoneme)
 	    longestMatch = numChars;
 
 	    // Copy phoneme data to 'phonemes'
-	    const void *ph_ph = pgm_read_ptr(&phoneme[ph].phoneme);
+	    const byte *ph_ph = (const byte *)pgm_read_ptr(&phoneme[ph].phoneme);
 	    for (numOut = 0; pgm_read_byte(ph_ph+numOut); numOut++)
 		phonemes[phonemeOut + numOut] = pgm_read_byte(ph_ph+numOut);
 

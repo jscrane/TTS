@@ -17,14 +17,14 @@ char website[] PROGMEM = "api.supertweet.net";
 #define KEY   "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 void sayIt(const char *text) {
-  digitalWrite(13, HIGH);
+  digitalWrite(LED_BUILTIN, HIGH);
   tts.sayText(text);
-  digitalWrite(13, LOW);
+  digitalWrite(LED_BUILTIN, LOW);
 }
 
 void setup () {
   Serial.begin(57600);
-  pinMode(13, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
 
   if (ether.begin(sizeof Ethernet::buffer, mymac, 10) == 0) 
     Serial.println( "Failed to access Ethernet controller");
