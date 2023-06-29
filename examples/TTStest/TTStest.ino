@@ -13,17 +13,16 @@
 #include <TTS.h>
 
 // Media pins
-#define PWM 3
-#define LED 13                          
+#define PWM D2
 
 TTS text2speech(PWM);  // default is digital pin 10
 
 void setup() { 
-  pinMode(LED, OUTPUT); 
+  pinMode(LED_BUILTIN, OUTPUT); 
 }
 
 void loop() {
-  digitalWrite(LED, !digitalRead(LED));
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
   text2speech.setPitch(6);
   text2speech.sayText("Hello  master! How are you doin?");
