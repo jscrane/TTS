@@ -16,7 +16,6 @@
 
 #include "TTS.h"
 #include "english.h"
-#include "sound.h"
 
 #define NUM_VOCAB sizeof(s_vocab)/sizeof(VOCAB)
 #define NUM_PHONEME sizeof(s_phonemes)/sizeof(PHONEME)
@@ -28,6 +27,7 @@ static byte seed2;
 
 static char phonemes[128];
 static char modifier[sizeof(phonemes)];	// must be same size as 'phonemes'
+
 
 // Lookup user specified pitch changes
 static const byte PROGMEM PitchesP[] = { 1, 2, 4, 6, 8, 10, 13, 16 };
@@ -319,14 +319,14 @@ static byte random2(void)
     return seed0;
 }
 
-static byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
+byte TTS::playTone(byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume)
 {
     const byte *soundData = &SoundData[soundNum * 0x40];
     while (count-- > 0) {
 	byte s = pgm_read_byte(&soundData[soundPos & 0x3fu]);
-	sound(pin, s & volume);
+	sound_api->sound(s & volume);
 	pause(pitch1);
-	sound(pin, (s >> 4) & volume);
+	sound_api->sound((s >> 4) & volume);
 	pause(pitch2);
 
 	soundPos++;
@@ -334,23 +334,45 @@ static byte playTone(int pin, byte soundNum, byte soundPos, char pitch1, char pi
     return soundPos & 0x3fu;
 }
 
-static void play(int pin, byte duration, byte soundNumber)
+void TTS::play(byte duration, byte soundNumber)
 {
     while (duration--)
-	playTone(pin, soundNumber, random2(), 7, 7, 10, 15);
+	playTone(soundNumber, random2(), 7, 7, 10, 15);
 }
 
 /******************************************************************************
  * User API
  ******************************************************************************/
+
+
 TTS::TTS(int p)
 {
-    pin = p;
+	sound_api = new Sound(p);
     defaultPitch = 7;
+	stream_ptr = nullptr;         
 #ifdef __AVR__
     pinMode(pin, OUTPUT);
 #endif
 }
+
+TTS::TTS(tts_data_callback_type cb, int len) {
+	sound_api = new SoundCallback(cb, this, len);
+	defaultPitch = 7;
+	stream_ptr = nullptr;         
+}
+
+/**
+	* @brief Construct a new TTS object which outputs the data to an Arduino Stream
+	* 
+	* @param out 
+	*/
+TTS::TTS(Print &out, int bits_per_sample) { 
+	stream_ptr = &out;         
+	sound_api = new SoundCallback((tts_data_callback_type)TTS::stream_data_callback, this, 512);
+	defaultPitch = 7;
+	getInfo().bits_per_sample = bits_per_sample;
+}
+
 
 /*
  * Speak a string of phonemes
@@ -373,7 +395,7 @@ void TTS::sayPhonemes(const char *textp)
 
     if (phonemesToData(textp, s_phonemes)) {
 	// phonemes has list of sound bytes
-	soundOn(pin);
+	sound_api->soundOn();
 
 	// initialise random number seed
 	seed0 = 0xecu;
@@ -435,7 +457,7 @@ void TTS::sayPhonemes(const char *textp)
 			// Make a white noise sound!
 			byte volume = (duration == 6) ? 15 : 1;	// volume mask
 			for (duration <<= 2; duration > 0; duration--) {
-			    playTone(pin, sound1Num, random2(), 8, 12, 11, volume);
+			    playTone(sound1Num, random2(), 8, 12, 11, volume);
 			    // Increase the volume
 			    if (++volume == 16)
 				volume = 15;	// full volume from now on
@@ -502,11 +524,11 @@ void TTS::sayPhonemes(const char *textp)
 		byte sound1End = min(sound1Stop, sound2Stop);
 
 		if (sound1Stop)
-		    soundPos = playTone(pin, sound1Num, soundPos, pitch1, pitch1, sound1End, 15);
+		    soundPos = playTone(sound1Num, soundPos, pitch1, pitch1, sound1End, 15);
 
 		// s18
 		if (sound2Stop != 0x40) {
-		    soundPos = playTone(pin, sound2Num, soundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
+		    soundPos = playTone(sound2Num, soundPos, pitch2, pitch2, sound2Stop - sound1End, 15);
 		}
 		// s23
 		if (sound1Duration != 0xff && duration < byte2) {
@@ -517,13 +539,13 @@ void TTS::sayPhonemes(const char *textp)
 		}
 		// Call any additional sound
 		if (byte1 == -1)
-		    play(pin, 3, 30);	// make an 'f' sound
+		    play(3, 30);	// make an 'f' sound
 		else if (byte1 == -2)
-		    play(pin, 3, 29);	// make an 's' sound
+		    play(3, 29);	// make an 's' sound
 		else if (byte1 == -3)
-		    play(pin, 3, 33);	// make a 'th' sound
+		    play(3, 33);	// make a 'th' sound
 		else if (byte1 == -4)
-		    play(pin, 3, 27);	// make a 'sh' sound
+		    play(3, 27);	// make a 'sh' sound
 
 	    } while (--duration);
 
@@ -543,7 +565,7 @@ void TTS::sayPhonemes(const char *textp)
 		delay2(25);
 	}			// next phoneme
     }
-    soundOff(pin);
+    sound_api->soundOff();
 }
 
 /*
@@ -556,3 +578,7 @@ void TTS::sayText(const char *original)
     if (textToPhonemes(original, s_vocab, text))
 	sayPhonemes(text);
 }
+
+
+
+

@@ -13,11 +13,55 @@
 
 #ifndef _TTS_H_
 #define _TTS_H_
+#include "sound.h"
+
+/**
+ * @brief TTS Output Information 
+ * 
+ */
+struct TTSInfo {
+  int channels = 1;
+  int sample_rate = 12000;
+  int bits_per_sample = 8;
+};
+
+/**
+ * @brief TTS API
+ * 
+ */
 
 class TTS {
   public:
-
+    /**
+     * @brief Construct a new TTS object using the default pin
+     * 
+     */
     TTS(int pin);
+
+
+    /**
+     * @brief Construct a new TTS object - Uses the Callback to provide the result
+     * 
+     */
+    TTS(tts_data_callback_type cb, int len=512);
+
+    /**
+     * @brief Construct a new TTS object which outputs the data to an Arduino Stream
+     * 
+     * @param out 
+     */
+    TTS(Print &out, int bits_per_sample=16);
+
+    /**
+     * @brief Destroy the TTS object
+     * 
+     */
+    ~TTS(){
+      if(sound_api!=nullptr) {
+        delete sound_api;
+      }
+    }
+
 
     /**
      * speaks a string of (english) text
@@ -39,9 +83,47 @@ class TTS {
      */
     byte getPitch(void) { return defaultPitch; }
 
-  private:
+    /**
+     * @brief Get additional output information
+     * 
+     * @return TTSInfo 
+     */
+    static TTSInfo& getInfo() {
+      static TTSInfo info;
+      return info;
+    }
+
+    // allow callback to access private fields
+    friend void stream_data_callback(void *vtts, int len, byte *data);
+
+  protected:
     byte defaultPitch;
-    int pin;
+    BaseSound *sound_api = nullptr;
+    Print *stream_ptr = nullptr;
+
+    void play(byte duration, byte soundNumber);
+    byte playTone(byte soundNum, byte soundPos, char pitch1, char pitch2, byte count, byte volume);
+
+    // callback to write sound data to stream
+    static void stream_data_callback(void *vtts, int len, byte *data){
+      TTS *tts = (TTS *) vtts;
+      TTSInfo *info = &getInfo();
+      if (tts->stream_ptr!=nullptr && len>0 && data!=nullptr){
+        if (info->bits_per_sample==8){
+          tts->stream_ptr->write((const char*)data, len);
+        } else {
+          // convert 8 to 16 bits
+          for (int j=0;j<len;j++){
+            int8_t sample = data[j];
+            int16_t sample16 = sample<<8;
+            tts->stream_ptr->write((const char*)&sample16, 2);
+          }
+        }
+      }
+    }
+
 };
+
+
 
 #endif
